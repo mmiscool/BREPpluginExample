@@ -15,6 +15,7 @@ export default (app) => {
         return div;
     });
     PrimitiveSphereFeaturePlugin.BREP = app.BREP;
+    console.log("This is the BREP thing",PrimitiveSphereFeaturePlugin.BREP);
     app.registerFeature(PrimitiveSphereFeaturePlugin); // optional
 };
 
