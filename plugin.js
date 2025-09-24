@@ -5,6 +5,7 @@ export default (app) => {
     app.addToolbarButton('🧩', 'Hello', () => {
         console.log('Hello from plugin')
         console.log("This is the context passed in to the plugin.", app)
+        alert("Yay");
     });
     app.addSidePanel('Plugin Panel', () => {
         const div = document.createElement('div');
