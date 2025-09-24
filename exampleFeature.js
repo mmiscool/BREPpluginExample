@@ -1,4 +1,4 @@
-export let BREP;
+export let BREP = {};
 
 const inputParamsSchema = {
     featureID: {
