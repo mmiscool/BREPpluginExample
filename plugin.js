@@ -1,8 +1,7 @@
-import { PrimitiveSphereFeaturePlugin, BREP } from './exampleFeature.js';
+import { PrimitiveSphereFeaturePlugin } from './exampleFeature.js';
 
 
 export default (app) => {
-    Object.assign(BREP, app.BREP);
     console.log("This is the context passed in to the plugin.", app)
     app.addToolbarButton('🧩', 'Hello', () => {
         console.log('Hello from plugin')
@@ -14,7 +13,9 @@ export default (app) => {
         div.textContent = 'This was added by a plugin.';
         return div;
     });
-    console.log("This is the BREP thing", PrimitiveSphereFeaturePlugin.BREP);
+    
+
+    PrimitiveSphereFeaturePlugin.setup(app)
     app.registerFeature(PrimitiveSphereFeaturePlugin); // optional
 };
 

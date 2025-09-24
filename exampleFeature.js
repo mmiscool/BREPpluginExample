@@ -1,4 +1,3 @@
-export let BREP = {};
 
 const inputParamsSchema = {
     featureID: {
@@ -32,6 +31,11 @@ export class PrimitiveSphereFeaturePlugin {
     static featureShortName = "S.p";
     static featureName = "Primitive Sphere";
     static inputParamsSchema = inputParamsSchema;
+    static BREP;
+
+    static setup(app){
+        this.BREP = app.BREP;
+    }
 
     constructor() {
         this.inputParams = {};
@@ -43,7 +47,7 @@ export class PrimitiveSphereFeaturePlugin {
 
         console.log(this.BREP);
 
-        const sphere = await new BREP.Sphere({
+        const sphere = await new this.BREP.Sphere({
             r: radius,
             resolution,
             name: featureID,
