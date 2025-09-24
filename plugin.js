@@ -19,8 +19,6 @@ export default (app) => {
 
 
 
-alert("Hello world");
-
 
 const inputParamsSchema = {
     featureID: {
