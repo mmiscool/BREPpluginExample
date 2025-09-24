@@ -1,4 +1,4 @@
-import {BREP} from './plugin.js';
+export let BREP;
 
 const inputParamsSchema = {
     featureID: {

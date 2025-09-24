@@ -1,6 +1,5 @@
-import { PrimitiveSphereFeaturePlugin } from './exampleFeature.js';
+import { PrimitiveSphereFeaturePlugin, BREP } from './exampleFeature.js';
 
-export let BREP;
 
 export default (app) => {
     BREP = app.BREP;
