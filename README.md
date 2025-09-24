@@ -7,7 +7,7 @@ If you just want the TL;DR: your repo must contain a `plugin.js` ES module that 
 
 You can fork this repo as a starting point for your plugin. After you have forked it simply edit `plugin.js`.
 
-See also: the BREP application README: [BREP/README.md](../BREP/README.md).
+See also: the BREP application README: https://github.com/mmiscool/BREP/blob/main/README.md
 
 ## Overview
 
@@ -20,7 +20,7 @@ See also: the BREP application README: [BREP/README.md](../BREP/README.md).
   - `addToolbarButton(label, title, onClick)`: add a toolbar button.
   - `addSidePanel(title, content)`: add a side panel section to the sidebar.
 
-Where these come from in the app: see [src/plugins/pluginManager.js](../BREP/src/plugins/pluginManager.js) (builds the `app` object) and [src/UI/viewer.js](../BREP/src/UI/viewer.js) (viewer API).
+Where these come from in the app: see [src/plugins/pluginManager.js](https://github.com/mmiscool/BREP/blob/main/src/plugins/pluginManager.js) (builds the `app` object) and [src/UI/viewer.js](https://github.com/mmiscool/BREP/blob/main/src/UI/viewer.js) (viewer API).
 
 
 ## How Plugins Are Loaded
@@ -298,7 +298,7 @@ feature.inputParams.radius = 20;
 await ph.runHistory();
 ```
 
-Internally, this uses the Feature Registry ([src/FeatureRegistry.js](../BREP/src/FeatureRegistry.js)) to find your class and apply default values from `inputParamsSchema`.
+Internally, this uses the Feature Registry ([src/FeatureRegistry.js](https://github.com/mmiscool/BREP/blob/main/src/FeatureRegistry.js)) to find your class and apply default values from `inputParamsSchema`.
 
 
 ## Side Panels and Toolbar
@@ -351,7 +351,7 @@ export default (app) => {
 
 ## References (source)
 
-- App plugin surface and loader: [src/plugins/pluginManager.js](../BREP/src/plugins/pluginManager.js)
-- Feature registry and history execution: [src/FeatureRegistry.js](../BREP/src/FeatureRegistry.js), [src/PartHistory.js](../BREP/src/PartHistory.js)
-- Example features (good templates): [src/features](../BREP/src/features)
-- Boolean helper: [src/BREP/applyBooleanOperation.js](../BREP/src/BREP/applyBooleanOperation.js)
+- App plugin surface and loader: [src/plugins/pluginManager.js](https://github.com/mmiscool/BREP/blob/main/src/plugins/pluginManager.js)
+- Feature registry and history execution: [src/FeatureRegistry.js](https://github.com/mmiscool/BREP/blob/main/src/FeatureRegistry.js), [src/PartHistory.js](https://github.com/mmiscool/BREP/blob/main/src/PartHistory.js)
+- Example features (good templates): [src/features](https://github.com/mmiscool/BREP/tree/main/src/features)
+- Boolean helper: [src/BREP/applyBooleanOperation.js](https://github.com/mmiscool/BREP/blob/main/src/BREP/applyBooleanOperation.js)
