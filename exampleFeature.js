@@ -58,9 +58,7 @@ export class PrimitiveSphereFeaturePlugin {
             }
         } catch (_) { }
         sphere.visualize();
-
-        alert("Hello from plugin feature");
-
+        
         return await BREP.applyBooleanOperation(partHistory || {}, sphere, this.inputParams.boolean, featureID);
     }
 }
