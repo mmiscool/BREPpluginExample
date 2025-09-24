@@ -51,8 +51,8 @@ const inputParamsSchema = {
 };
 
 export class PrimitiveSphereFeaturePlugin {
-    static featureShortName = "P.S.p";
-    static featureName = "Primitive Sphere plugin";
+    static featureShortName = "S.p";
+    static featureName = "Primitive Sphere";
     static inputParamsSchema = inputParamsSchema;
 
     constructor() {
