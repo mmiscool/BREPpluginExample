@@ -18,12 +18,7 @@ export default (app) => {
 
 
 
-// primitiveSphereFeature.js
-// Creates a primitive sphere as a Solid containing a single Face (one analytic surface).
-// Centered at the origin, aligned with the Y axis (poles at ±radius along Y).
 
-import { extractDefaultValues } from "../../PartHistory.js";
-import { BREP } from '../../BREP/BREP.js'
 
 const inputParamsSchema = {
     featureID: {
