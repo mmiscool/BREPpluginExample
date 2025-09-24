@@ -1,6 +1,7 @@
-
+let BREP;
 
 export default (app) => {
+    BREP = app.BREP;
     console.log("This is the context passed in to the plugin.", app)
     app.addToolbarButton('🧩', 'Hello', () => {
         console.log('Hello from plugin')
@@ -12,7 +13,7 @@ export default (app) => {
         div.textContent = 'This was added by a plugin.';
         return div;
     });
-    // app.registerFeature(MyFeatureClass); // optional
+     app.registerFeature(PrimitiveSphereFeaturePlugin); // optional
 };
 
 
@@ -49,13 +50,13 @@ const inputParamsSchema = {
     }
 };
 
-export class PrimitiveSphereFeature {
-    static featureShortName = "P.S";
-    static featureName = "Primitive Sphere";
+export class PrimitiveSphereFeaturePlugin {
+    static featureShortName = "P.S.p";
+    static featureName = "Primitive Sphere plugin";
     static inputParamsSchema = inputParamsSchema;
 
     constructor() {
-        this.inputParams = extractDefaultValues(inputParamsSchema);
+        this.inputParams ={};
 
         this.persistentData = {};
     }
