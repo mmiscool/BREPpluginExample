@@ -7,6 +7,8 @@ If you just want the TL;DR: your repo must contain a `plugin.js` ES module that 
 
 You can fork this repo as a starting point for your plugin. After you have forked it simply edit `plugin.js`.
 
+See also: the BREP application README: [BREP/README.md](../BREP/README.md).
+
 ## Overview
 
 - Plugins are ES modules fetched directly from GitHub.
@@ -18,7 +20,7 @@ You can fork this repo as a starting point for your plugin. After you have forke
   - `addToolbarButton(label, title, onClick)`: add a toolbar button.
   - `addSidePanel(title, content)`: add a side panel section to the sidebar.
 
-Where these come from in the app: see `src/plugins/pluginManager.js` (builds the `app` object) and `src/UI/viewer.js` (viewer API).
+Where these come from in the app: see [src/plugins/pluginManager.js](../BREP/src/plugins/pluginManager.js) (builds the `app` object) and [src/UI/viewer.js](../BREP/src/UI/viewer.js) (viewer API).
 
 
 ## How Plugins Are Loaded
@@ -36,52 +38,31 @@ Where these come from in the app: see `src/plugins/pluginManager.js` (builds the
 
 Place a `plugin.js` at the repo path. Export either a default function or an `install` function. Both receive `app`.
 
-Example minimal entrypoint:
+Example minimal entrypoint (from this repo):
 
 ```js
 // plugin.js
-export default async function install(app) {
-  const { BREP, viewer } = app;
+import { PrimitiveSphereFeaturePlugin } from './exampleFeature.js';
 
-  class HelloCubeFeature {
-    static featureShortName = 'HC';
-    static featureName = 'Hello Cube';
-    static inputParamsSchema = {
-      featureID: { type: 'string', default_value: null, hint: 'Unique id (set by app)' },
-      size: { type: 'number', default_value: 10, hint: 'Edge length' },
-      transform: { type: 'transform', default_value: { position: [0,0,0], rotationEuler: [0,0,0], scale: [1,1,1] } },
-      boolean: { type: 'boolean_operation', default_value: { targets: [], operation: 'NONE' } },
-    };
+export default function install(app) {
+  // Make the app (and BREP) available to the feature class
+  PrimitiveSphereFeaturePlugin.setup(app);
 
-    constructor() { this.inputParams = {}; this.persistentData = {}; }
-
-    async run(partHistory) {
-      const { size, featureID } = this.inputParams;
-      const cube = new BREP.Cube({ x: size, y: size, z: size, name: featureID });
-      if (this.inputParams.transform) cube.bakeTRS(this.inputParams.transform);
-      cube.visualize();
-      // Apply optional boolean against selected targets
-      const effects = await BREP.applyBooleanOperation(partHistory, cube, this.inputParams.boolean, featureID);
-      return effects; // { added: [...], removed: [...] } also OK to return just effects.added
-    }
-  }
-
-  app.registerFeature(HelloCubeFeature);
-
-  // Optional UI: toolbar button that creates the feature
-  app.addToolbarButton('HC', 'Add Hello Cube', async () => {
-    const ph = viewer.partHistory;
-    const f = await ph.newFeature('Hello Cube'); // or 'HC'
-    f.inputParams.size = 12;
-    await ph.runHistory();
+  // Optional: small UI hooks
+  app.addToolbarButton('🧩', 'Hello', () => {
+    console.log('Hello from plugin');
+    console.log('This is the context passed in to the plugin.', app);
+    alert('Yay');
   });
 
-  // Optional UI: side panel
-  await app.addSidePanel('Hello Plugin', () => {
-    const el = document.createElement('div');
-    el.textContent = 'This panel was added by a plugin.';
-    return el;
+  app.addSidePanel('Plugin Panel', () => {
+    const div = document.createElement('div');
+    div.textContent = 'This was added by a plugin.';
+    return div;
   });
+
+  // Register your feature so users can add it
+  app.registerFeature(PrimitiveSphereFeaturePlugin);
 }
 ```
 
@@ -213,106 +194,92 @@ const result = await BREP.applyBooleanOperation(partHistory, sphere, { operation
 
 ### Accessing `app.BREP` exactly
 
-Plugins commonly capture the shared BREP instance once at module scope and reuse it in feature classes:
+This repo’s example passes the `app` object into the feature class via a static `setup(app)` method, and the feature reads the shared BREP instance from there:
 
 ```js
-// plugin.js
-let BREP; // module-scope handle
+// exampleFeature.js
+export class PrimitiveSphereFeaturePlugin {
+  static app = null;
+  static setup(app) { this.app = app; }
 
-export default (app) => {
-  BREP = app.BREP; // capture the shared instance from the CAD app
-  // ...register features, add UI, etc.
-};
+  async run(partHistory) {
+    const BREP = this.constructor.app.BREP; // shared instance from the host app
+    const sphere = new BREP.Sphere({ r: 5, resolution: 32, name: 'FeatureID' });
+    sphere.visualize();
+    return await BREP.applyBooleanOperation(partHistory, sphere, this.inputParams.boolean, this.inputParams.featureID);
+  }
+}
 ```
 
-Alternatively, destructure per function: `const { BREP } = app;`. Always use the provided `app.BREP` rather than importing your own copy.
+Alternative patterns also work, such as capturing once at module scope (`let BREP; export default (app) => { BREP = app.BREP; }`) or destructuring on demand (`const { BREP } = app`). Always use the provided `app.BREP` rather than importing your own copy.
 
 
 ## Complete Example: Toolbar + Side Panel + Feature
 
-The snippet below shows an entrypoint that:
-- Captures `app.BREP` for use inside the feature class
-- Adds a toolbar button and a side panel
-- Registers a simple sphere primitive feature that supports transform + boolean params
+This section shows the actual files in this repo and how the feature gets access to `app.BREP`.
 
 ```js
-let BREP;
+// plugin.js
+import { PrimitiveSphereFeaturePlugin } from './exampleFeature.js';
 
 export default (app) => {
-    BREP = app.BREP;
-    console.log("This is the context passed in to the plugin.", app)
-    app.addToolbarButton('🧩', 'Hello', () => {
-        console.log('Hello from plugin')
-        console.log("This is the context passed in to the plugin.", app)
-        alert("Yay");
-    });
-    app.addSidePanel('Plugin Panel', () => {
-        const div = document.createElement('div');
-        div.textContent = 'This was added by a plugin.';
-        return div;
-    });
-     app.registerFeature(PrimitiveSphereFeaturePlugin); // optional
+  // Provide the app (which contains BREP) to the feature class
+  PrimitiveSphereFeaturePlugin.setup(app);
+
+  // Optional UI examples
+  app.addToolbarButton('🧩', 'Hello', () => {
+    console.log('Hello from plugin');
+    console.log('This is the context passed in to the plugin.', app);
+    alert('Yay');
+  });
+  app.addSidePanel('Plugin Panel', () => {
+    const div = document.createElement('div');
+    div.textContent = 'This was added by a plugin.';
+    return div;
+  });
+
+  // Register the feature
+  app.registerFeature(PrimitiveSphereFeaturePlugin);
 };
+```
 
-
-
-
+```js
+// exampleFeature.js
 const inputParamsSchema = {
-    featureID: {
-        type: 'string',
-        default_value: null,
-        hint: 'Unique identifier for the feature'
-    },
-    radius: {
-        type: 'number',
-        default_value: 5,
-        hint: 'Radius of the sphere'
-    },
-    resolution: {
-        type: 'number',
-        default_value: 32,
-        hint: 'Base segment count (longitude). Latitude segments are derived from this.'
-    },
-    transform: {
-        type: 'transform',
-        default_value: { position: [0, 0, 0], rotationEuler: [0, 0, 0], scale: [1, 1, 1] },
-        hint: 'Position, rotation, and scale'
-    },
-    boolean: {
-        type: 'boolean_operation',
-        default_value: { targets: [], operation: 'NONE' },
-        hint: 'Optional boolean operation with selected solids'
-    }
+  featureID: { type: 'string', default_value: null, hint: 'Unique identifier for the feature' },
+  radius: { type: 'number', default_value: 5, hint: 'Radius of the sphere' },
+  resolution: { type: 'number', default_value: 32, hint: 'Base segment count (longitude). Latitude from this).' },
+  transform: { type: 'transform', default_value: { position: [0, 0, 0], rotationEuler: [0, 0, 0], scale: [1, 1, 1] }, hint: 'Position, rotation, and scale' },
+  boolean: { type: 'boolean_operation', default_value: { targets: [], operation: 'NONE' }, hint: 'Optional boolean operation with selected solids' },
 };
 
 export class PrimitiveSphereFeaturePlugin {
-    static featureShortName = "S.p";
-    static featureName = "Primitive Sphere";
-    static inputParamsSchema = inputParamsSchema;
+  static featureShortName = 'S.p';
+  static featureName = 'Primitive Sphere';
+  static inputParamsSchema = inputParamsSchema;
+  static app = null;
 
-    constructor() {
-        this.inputParams ={};
+  static setup(app) { this.app = app; }
 
-        this.persistentData = {};
-    }
+  constructor() {
+    this.inputParams = {};
+    this.persistentData = {};
+  }
 
-    async run(partHistory) {
-        const { radius, resolution, featureID } = this.inputParams;
+  async run(partHistory) {
+    const { radius, resolution, featureID } = this.inputParams;
+    const BREP = this.constructor.app.BREP; // Access BREP from the app provided during setup
 
-        const sphere = await new BREP.Sphere({
-            r: radius,
-            resolution,
-            name: featureID,
-        });
-        try {
-            if (this.inputParams.transform) {
-                sphere.bakeTRS(this.inputParams.transform);
-            }
-        } catch (_) { }
-        sphere.visualize();
+    const sphere = new BREP.Sphere({ r: radius, resolution, name: featureID });
+    try {
+      if (this.inputParams.transform) {
+        sphere.bakeTRS(this.inputParams.transform);
+      }
+    } catch (_) {}
+    sphere.visualize();
 
-        return await BREP.applyBooleanOperation(partHistory || {}, sphere, this.inputParams.boolean, featureID);
-    }
+    return await BREP.applyBooleanOperation(partHistory || {}, sphere, this.inputParams.boolean, featureID);
+  }
 }
 ```
 
@@ -326,12 +293,12 @@ From toolbar buttons or side panels you can add features directly:
 ```js
 const ph = app.viewer.partHistory;
 // Either the long name or short name works; match your class statics.
-const feature = await ph.newFeature('Hello Cube'); // or 'HC'
-feature.inputParams.size = 20;
+const feature = await ph.newFeature('Primitive Sphere'); // or 'S.p'
+feature.inputParams.radius = 20;
 await ph.runHistory();
 ```
 
-Internally, this uses the Feature Registry (`src/FeatureRegistry.js`) to find your class and apply default values from `inputParamsSchema`.
+Internally, this uses the Feature Registry ([src/FeatureRegistry.js](../BREP/src/FeatureRegistry.js)) to find your class and apply default values from `inputParamsSchema`.
 
 
 ## Side Panels and Toolbar
@@ -350,16 +317,17 @@ Plugin side panels appear before the Display Settings panel.
 ```
 your-plugin-repo/
   plugin.js            # entrypoint (required)
-  src/
-    HelloCubeFeature.js
-    helpers.js
+  exampleFeature.js    # a feature class
 ```
 
 `plugin.js` can import your own files via relative paths:
 
 ```js
-import { HelloCubeFeature } from './src/HelloCubeFeature.js';
-export default (app) => { app.registerFeature(HelloCubeFeature); };
+import { PrimitiveSphereFeaturePlugin } from './exampleFeature.js';
+export default (app) => {
+  PrimitiveSphereFeaturePlugin.setup(app);
+  app.registerFeature(PrimitiveSphereFeaturePlugin);
+};
 ```
 
 
@@ -383,7 +351,7 @@ export default (app) => { app.registerFeature(HelloCubeFeature); };
 
 ## References (source)
 
-- App plugin surface and loader: `src/plugins/pluginManager.js`
-- Feature registry and history execution: `src/FeatureRegistry.js`, `src/PartHistory.js`
-- Example features (good templates): `src/features/*/*Feature.js`
-- Boolean helper: `src/BREP/applyBooleanOperation.js`
+- App plugin surface and loader: [src/plugins/pluginManager.js](../BREP/src/plugins/pluginManager.js)
+- Feature registry and history execution: [src/FeatureRegistry.js](../BREP/src/FeatureRegistry.js), [src/PartHistory.js](../BREP/src/PartHistory.js)
+- Example features (good templates): [src/features](../BREP/src/features)
+- Boolean helper: [src/BREP/applyBooleanOperation.js](../BREP/src/BREP/applyBooleanOperation.js)
