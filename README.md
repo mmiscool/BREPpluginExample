@@ -248,7 +248,7 @@ export default (app) => {
 const inputParamsSchema = {
   featureID: { type: 'string', default_value: null, hint: 'Unique identifier for the feature' },
   radius: { type: 'number', default_value: 5, hint: 'Radius of the sphere' },
-  resolution: { type: 'number', default_value: 32, hint: 'Base segment count (longitude). Latitude from this).' },
+  resolution: { type: 'number', default_value: 32, hint: 'Base segment count (longitude). Latitude segments are derived from this.' },
   transform: { type: 'transform', default_value: { position: [0, 0, 0], rotationEuler: [0, 0, 0], scale: [1, 1, 1] }, hint: 'Position, rotation, and scale' },
   boolean: { type: 'boolean_operation', default_value: { targets: [], operation: 'NONE' }, hint: 'Optional boolean operation with selected solids' },
 };
@@ -270,7 +270,7 @@ export class PrimitiveSphereFeaturePlugin {
     const { radius, resolution, featureID } = this.inputParams;
     const BREP = this.constructor.app.BREP; // Access BREP from the app provided during setup
 
-    const sphere = new BREP.Sphere({ r: radius, resolution, name: featureID });
+    const sphere = await new BREP.Sphere({ r: radius, resolution, name: featureID });
     try {
       if (this.inputParams.transform) {
         sphere.bakeTRS(this.inputParams.transform);
@@ -353,5 +353,5 @@ export default (app) => {
 
 - App plugin surface and loader: [src/plugins/pluginManager.js](https://github.com/mmiscool/BREP/blob/master/src/plugins/pluginManager.js)
 - Feature registry and history execution: [src/FeatureRegistry.js](https://github.com/mmiscool/BREP/blob/master/src/FeatureRegistry.js), [src/PartHistory.js](https://github.com/mmiscool/BREP/blob/master/src/PartHistory.js)
-- Example features (good templates): [src/features](https://github.com/mmiscool/BREP/tree/main/src/features)
+- Example features (good templates): [src/features](https://github.com/mmiscool/BREP/tree/master/src/features)
 - Boolean helper: [src/BREP/applyBooleanOperation.js](https://github.com/mmiscool/BREP/blob/master/src/BREP/applyBooleanOperation.js)
